@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # ─── NGINX Load Balancer ───
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - game-server-1
+      - game-server-2
+      - game-server-3
+    networks:
+      - game-network
+
+  # ─── Game Server Instances ───
+  game-server-1:
+    build: .
+    environment:
+      - PORT=3000
+      - SERVER_ID=server-1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=game_server
+      - POSTGRES_USER=gameadmin
+      - POSTGRES_PASSWORD=gamepass123
+      - JWT_SECRET=production-secret-change-me
+      - NODE_ENV=production
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - game-network
+
+  game-server-2:
+    build: .
+    environment:
+      - PORT=3000
+      - SERVER_ID=server-2
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=game_server
+      - POSTGRES_USER=gameadmin
+      - POSTGRES_PASSWORD=gamepass123
+      - JWT_SECRET=production-secret-change-me
+      - NODE_ENV=production
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - game-network
+
+  game-server-3:
+    build: .
+    environment:
+      - PORT=3000
+      - SERVER_ID=server-3
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=game_server
+      - POSTGRES_USER=gameadmin
+      - POSTGRES_PASSWORD=gamepass123
+      - JWT_SECRET=production-secret-change-me
+      - NODE_ENV=production
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - game-network
+
+  # ─── Redis ───
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - game-network
+
+  # ─── PostgreSQL ───
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=game_server
+      - POSTGRES_USER=gameadmin
+      - POSTGRES_PASSWORD=gamepass123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gameadmin -d game_server"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - game-network
+
+volumes:
+  redis-data:
+  postgres-data:
+
+networks:
+  game-network:
+    driver: bridge
