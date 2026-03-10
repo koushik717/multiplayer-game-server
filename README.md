@@ -2,6 +2,7 @@
 
 > Production-grade, horizontally scalable, server-authoritative multiplayer game server built with Node.js, Redis, PostgreSQL, and Docker.
 
+**Live Deployment**: [https://multiplayer-game-server-production-cf42.up.railway.app](https://multiplayer-game-server-production-cf42.up.railway.app)
 **Game**: Tic-Tac-Toe (simple logic, architecture-first design)
 
 ---
@@ -10,11 +11,11 @@
 
 ```
                 ┌────────────────────┐
-                │   NGINX Load       │
-                │   Balancer (:8080) │
-                └─────────┬──────────┘
-                          │
-          ┌───────────────┼────────────────┐
+                  │   Load Balancer  │
+                  │   (:80 / :443)   │
+                  └─────────┬──────────┘
+                            │
+            ┌───────────────┼────────────────┐
           │               │                │
    ┌──────▼─────┐  ┌──────▼─────┐  ┌──────▼─────┐
    │ Game API #1 │  │ Game API #2 │  │ Game API #3 │
@@ -109,6 +110,10 @@ Disconnect → Mark as "disconnected" → Start 30s timer
 ---
 
 ## 🚀 Quick Start
+
+### Live Demo
+Interact with the live, deployed server directly via the browser client:
+[https://multiplayer-game-server-production-cf42.up.railway.app](https://multiplayer-game-server-production-cf42.up.railway.app)
 
 ### Prerequisites
 - Node.js 20+
@@ -258,7 +263,7 @@ Exposed at `/metrics` (Prometheus format):
 
 ## 🏆 Resume Bullets
 
-> - Engineered a **server-authoritative multiplayer game server** supporting **200 concurrent WebSocket connections** with **1ms p95 move latency** (verified via k6 load testing)
+> - Engineered a **server-authoritative multiplayer game server** supporting **200 concurrent WebSocket connections** with **1ms p95 move latency** (verified via k6 load testing). [Live link](https://multiplayer-game-server-production-cf42.up.railway.app)
 > - Implemented **distributed locking** (Redis `SET NX EX` with Lua-scripted safe release) achieving **zero state corruption** across 1,275 games under concurrent load
 > - Designed **Redis Pub/Sub** cross-instance synchronization with **2.21ms p95 WebSocket connect time** and **100% match completion rate**
 > - Built **reconnection logic** with 30-second grace period and full state snapshot restoration for seamless player recovery
