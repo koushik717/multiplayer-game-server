@@ -259,17 +259,7 @@ Exposed at `/metrics` (Prometheus format):
   websocket-load.js        # k6 load test script
 ```
 
----
 
-## 🏆 Resume Bullets
-
-> - Engineered a **server-authoritative multiplayer game server** supporting **200 concurrent WebSocket connections** with **1ms p95 move latency** (verified via k6 load testing). [Live link](https://multiplayer-game-server-production-cf42.up.railway.app)
-> - Implemented **distributed locking** (Redis `SET NX EX` with Lua-scripted safe release) achieving **zero state corruption** across 1,275 games under concurrent load
-> - Designed **Redis Pub/Sub** cross-instance synchronization with **2.21ms p95 WebSocket connect time** and **100% match completion rate**
-> - Built **reconnection logic** with 30-second grace period and full state snapshot restoration for seamless player recovery
-> - Implemented **event sourcing**, **optimistic locking** (version numbers), and **atomic matchmaking** (Lua scripts) for production-grade data integrity
-> - Created **AI opponent** using minimax with alpha-beta pruning, processed through the same server-authoritative validation pipeline as human players
-> - Containerized with Docker Compose (3 game servers + NGINX + Redis + PostgreSQL) with **8 Prometheus metrics** for production observability
 
 ---
 
