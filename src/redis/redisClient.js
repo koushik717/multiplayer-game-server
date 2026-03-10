@@ -7,10 +7,7 @@ const Redis = require('ioredis');
  * We need separate clients for pub/sub (subscriber can't run other commands).
  */
 function createRedisClient(label = 'main') {
-  const client = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-    password: process.env.REDIS_PASSWORD || undefined,
+  const options = {
     retryStrategy(times) {
       const delay = Math.min(times * 100, 3000);
       console.log(`[Redis:${label}] Reconnecting in ${delay}ms (attempt ${times})`);
@@ -19,7 +16,17 @@ function createRedisClient(label = 'main') {
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
     lazyConnect: false,
-  });
+  };
+
+  let client;
+  if (process.env.REDIS_URL) {
+    client = new Redis(process.env.REDIS_URL, options);
+  } else {
+    options.host = process.env.REDIS_HOST || 'localhost';
+    options.port = parseInt(process.env.REDIS_PORT, 10) || 6379;
+    options.password = process.env.REDIS_PASSWORD || undefined;
+    client = new Redis(options);
+  }
 
   client.on('connect', () => console.log(`[Redis:${label}] Connected`));
   client.on('error', (err) => console.error(`[Redis:${label}] Error:`, err.message));
