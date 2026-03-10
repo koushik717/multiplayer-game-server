@@ -1,0 +1,36 @@
+{
+  "name": "multiplayer-game-server",
+  "version": "1.0.0",
+  "description": "Production-grade multiplayer game server with server-authoritative architecture, Redis state management, distributed locking, and horizontal scaling",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test src/tests/**/*.test.js",
+    "test:integration": "node --test src/tests/integration/**/*.test.js",
+    "load-test": "k6 run load-tests/websocket-load.js"
+  },
+  "keywords": [
+    "multiplayer",
+    "game-server",
+    "websocket",
+    "redis",
+    "distributed-systems",
+    "real-time"
+  ],
+  "author": "Koushik",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "prom-client": "^15.1.3",
+    "uuid": "^11.0.5",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
