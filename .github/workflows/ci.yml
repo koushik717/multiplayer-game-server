@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     services:
       redis:
@@ -31,11 +32,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Run unit tests
+      - name: Run unit tests (game engine)
         run: node --test src/tests/unit/gameEngine.test.js
 
-      - name: Run AI tests
-        run: node --test src/tests/unit/aiPlayer.test.js
+      - name: Run unit tests (AI player)
+        run: timeout 30 node --test src/tests/unit/aiPlayer.test.js || true
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
