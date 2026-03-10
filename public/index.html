@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiplayer Game — Test Client</title>
+  <style>
+    :root {
+      --bg: #0f0f23;
+      --surface: #1a1a2e;
+      --surface-2: #16213e;
+      --accent: #e94560;
+      --accent-2: #0f3460;
+      --text: #e0e0e0;
+      --text-dim: #888;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --error: #ef4444;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, var(--accent), #533483);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+      color: var(--accent);
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    input, button, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: var(--accent); }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent), #533483);
+      border: none;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: var(--accent-2);
+    }
+
+    .btn-danger {
+      background: var(--error);
+    }
+
+    /* ── Game Board ── */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      max-width: 300px;
+      margin: 20px auto;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: var(--surface-2);
+      border: 2px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cell:hover:not(.taken) {
+      border-color: var(--accent);
+      background: rgba(233, 69, 96, 0.1);
+    }
+
+    .cell.taken { cursor: default; }
+    .cell .X { color: var(--accent); }
+    .cell .O { color: #4fc3f7; }
+    .cell.win-cell { background: rgba(74, 222, 128, 0.15); border-color: var(--success); }
+
+    /* ── Status indicators ── */
+    .status {
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+
+    .status.connected { background: rgba(74, 222, 128, 0.1); color: var(--success); }
+    .status.disconnected { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+    .status.playing { background: rgba(79, 195, 247, 0.1); color: #4fc3f7; }
+    .status.waiting { background: rgba(251, 191, 36, 0.1); color: var(--warning); }
+
+    /* ── Log ── */
+    #log {
+      background: #0a0a1a;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .log-entry { border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0; }
+    .log-entry.sent { color: var(--warning); }
+    .log-entry.received { color: var(--success); }
+    .log-entry.error { color: var(--error); }
+    .log-entry.info { color: var(--text-dim); }
+
+    /* ── Game info ── */
+    .game-info {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: 0.85rem;
+    }
+
+    .player-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .player-badge.X { background: rgba(233, 69, 96, 0.2); color: var(--accent); }
+    .player-badge.O { background: rgba(79, 195, 247, 0.2); color: #4fc3f7; }
+
+    .turn-indicator {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .pulse { animation: pulse 1.5s infinite; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+  <h1>🎮 Multiplayer Game Server — Test Client</h1>
+
+  <div class="container">
+    <!-- Connection Panel -->
+    <div class="panel">
+      <h2>🔌 Connection</h2>
+      <input id="serverUrl" value="http://localhost:3001" placeholder="Server URL">
+      <input id="playerName" placeholder="Your name" value="">
+      <button id="connectBtn" onclick="connect()">Connect</button>
+      <button id="disconnectBtn" onclick="disconnect()" class="btn-danger" disabled>Disconnect</button>
+      <div id="connectionStatus" class="status disconnected">Disconnected</div>
+    </div>
+
+    <!-- Matchmaking Panel -->
+    <div class="panel">
+      <h2>🎯 Matchmaking</h2>
+      <select id="gameMode">
+        <option value="pvp">PvP — Find Opponent</option>
+        <option value="solo">Solo — Play vs AI</option>
+      </select>
+      <button id="findMatchBtn" onclick="findMatch()" disabled>Find Match</button>
+      <button id="cancelMatchBtn" onclick="cancelMatch()" class="btn-secondary" disabled>Cancel</button>
+      <div id="matchStatus" class="status" style="display:none"></div>
+    </div>
+
+    <!-- Game Board Panel -->
+    <div class="panel full-width" id="gamePanel" style="display:none">
+      <h2>🎮 Game</h2>
+      <div class="game-info">
+        <span id="player1Info"></span>
+        <span id="gameId" style="color:var(--text-dim); font-size:0.75rem"></span>
+        <span id="player2Info"></span>
+      </div>
+      <div id="turnIndicator" class="turn-indicator"></div>
+      <div class="board" id="board"></div>
+      <div id="gameStatus" class="status" style="display:none"></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button onclick="resign()" class="btn-danger" id="resignBtn">Resign</button>
+        <button onclick="findMatch()" class="btn-secondary" id="newGameBtn" style="display:none">New Game</button>
+      </div>
+    </div>
+
+    <!-- Event Log -->
+    <div class="panel full-width">
+      <h2>📋 Event Log</h2>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let token = null;
+    let playerId = null;
+    let currentGame = null;
+
+    // ── Connection ──
+    async function connect() {
+      const serverUrl = document.getElementById('serverUrl').value;
+      const playerName = document.getElementById('playerName').value || `Player_${Math.random().toString(36).slice(2, 6)}`;
+
+      document.getElementById('playerName').value = playerName;
+      logMessage('info', `Connecting as "${playerName}"...`);
+
+      try {
+        // Get JWT token
+        const res = await fetch(`${serverUrl}/api/auth/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playerName }),
+        });
+
+        const data = await res.json();
+        token = data.token;
+        playerId = data.playerId;
+        logMessage('info', `Got token for player ${playerId}`);
+
+        // Connect WebSocket
+        const wsUrl = serverUrl.replace('http', 'ws') + `/ws?token=${token}`;
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          logMessage('info', 'WebSocket connected');
+          setConnectionStatus('connected', `Connected as ${playerName}`);
+          document.getElementById('connectBtn').disabled = true;
+          document.getElementById('disconnectBtn').disabled = false;
+          document.getElementById('findMatchBtn').disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          handleMessage(msg);
+        };
+
+        ws.onclose = (event) => {
+          logMessage('info', `WebSocket closed (code: ${event.code})`);
+          setConnectionStatus('disconnected', 'Disconnected');
+          document.getElementById('connectBtn').disabled = false;
+          document.getElementById('disconnectBtn').disabled = true;
+          document.getElementById('findMatchBtn').disabled = true;
+          ws = null;
+        };
+
+        ws.onerror = (err) => {
+          logMessage('error', 'WebSocket error');
+        };
+      } catch (err) {
+        logMessage('error', `Connection failed: ${err.message}`);
+      }
+    }
+
+    function disconnect() {
+      if (ws) ws.close();
+    }
+
+    // ── Matchmaking ──
+    function findMatch() {
+      const mode = document.getElementById('gameMode').value;
+      sendMessage({ type: 'FIND_MATCH', mode });
+      setMatchStatus('waiting', `Looking for ${mode === 'solo' ? 'AI opponent' : 'an opponent'}...`);
+      document.getElementById('cancelMatchBtn').disabled = false;
+    }
+
+    function cancelMatch() {
+      sendMessage({ type: 'CANCEL_MATCH' });
+      setMatchStatus('', '');
+      document.getElementById('cancelMatchBtn').disabled = true;
+    }
+
+    // ── Game Actions ──
+    function makeMove(row, col) {
+      if (!currentGame || currentGame.status !== 'active') return;
+      if (currentGame.currentTurn !== playerId) {
+        logMessage('error', 'Not your turn!');
+        return;
+      }
+
+      sendMessage({
+        type: 'MOVE',
+        gameId: currentGame.gameId,
+        move: { row, col },
+        version: currentGame.version,
+      });
+    }
+
+    function resign() {
+      if (!currentGame) return;
+      sendMessage({ type: 'RESIGN', gameId: currentGame.gameId });
+    }
+
+    // ── Message Handler ──
+    function handleMessage(msg) {
+      logMessage('received', `${msg.type}: ${JSON.stringify(msg).slice(0, 120)}`);
+
+      switch (msg.type) {
+        case 'CONNECTED':
+          logMessage('info', `Server: ${msg.serverId}`);
+          break;
+
+        case 'MATCHMAKING_STATUS':
+          setMatchStatus(msg.status === 'queued' ? 'waiting' : '', msg.message);
+          break;
+
+        case 'GAME_START':
+          currentGame = {
+            gameId: msg.gameId,
+            players: msg.players,
+            board: msg.board,
+            currentTurn: msg.currentTurn,
+            playerSymbols: msg.playerSymbols,
+            version: msg.version,
+            status: 'active',
+          };
+          showGame();
+          setMatchStatus('', '');
+          document.getElementById('cancelMatchBtn').disabled = true;
+          break;
+
+        case 'MOVE_MADE':
+          if (currentGame && currentGame.gameId === msg.gameId) {
+            currentGame.board = msg.board;
+            currentGame.currentTurn = msg.currentTurn;
+            currentGame.version = msg.version;
+            currentGame.status = msg.status;
+            currentGame.winLine = msg.winLine;
+            currentGame.winnerId = msg.winnerId;
+            currentGame.resultType = msg.resultType;
+            renderBoard();
+            updateTurnIndicator();
+
+            if (msg.status === 'completed') {
+              handleGameEnd(msg);
+            }
+          }
+          break;
+
+        case 'GAME_OVER':
+          handleGameEnd(msg);
+          break;
+
+        case 'GAME_STATE':
+          currentGame = msg;
+          showGame();
+          break;
+
+        case 'RECONNECTED':
+          currentGame = msg;
+          showGame();
+          logMessage('info', '🔄 Reconnected to game!');
+          break;
+
+        case 'PLAYER_DISCONNECTED':
+          logMessage('info', `⚠️ Opponent disconnected. Waiting ${msg.reconnectTimeoutMs / 1000}s...`);
+          break;
+
+        case 'PLAYER_RECONNECTED':
+          logMessage('info', '✅ Opponent reconnected!');
+          break;
+
+        case 'INVALID_MOVE':
+        case 'VERSION_MISMATCH':
+        case 'ERROR':
+          logMessage('error', msg.error);
+          break;
+      }
+    }
+
+    // ── Rendering ──
+    function showGame() {
+      document.getElementById('gamePanel').style.display = 'block';
+      const symbols = currentGame.playerSymbols;
+      const p1 = currentGame.players[0];
+      const p2 = currentGame.players[1];
+
+      document.getElementById('player1Info').innerHTML =
+        `<span class="player-badge X">${p1 === playerId ? 'You' : (p1.startsWith('ai-') ? 'AI' : 'Opponent')} (X)</span>`;
+      document.getElementById('player2Info').innerHTML =
+        `<span class="player-badge O">${p2 === playerId ? 'You' : (p2.startsWith('ai-') ? 'AI' : 'Opponent')} (O)</span>`;
+      document.getElementById('gameId').textContent = `Game: ${currentGame.gameId.slice(0, 8)}...`;
+
+      renderBoard();
+      updateTurnIndicator();
+
+      document.getElementById('resignBtn').style.display = currentGame.status === 'active' ? '' : 'none';
+      document.getElementById('newGameBtn').style.display = currentGame.status !== 'active' ? '' : 'none';
+    }
+
+    function renderBoard() {
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          const val = currentGame.board[r][c];
+
+          if (val) {
+            cell.innerHTML = `<span class="${val}">${val}</span>`;
+            cell.classList.add('taken');
+          }
+
+          // Highlight winning line
+          if (currentGame.winLine) {
+            const isWinCell = currentGame.winLine.some(pos => pos.r === r && pos.c === c);
+            if (isWinCell) cell.classList.add('win-cell');
+          }
+
+          cell.addEventListener('click', () => makeMove(r, c));
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function updateTurnIndicator() {
+      const el = document.getElementById('turnIndicator');
+      if (currentGame.status !== 'active') {
+        el.textContent = '';
+        return;
+      }
+
+      if (currentGame.currentTurn === playerId) {
+        el.innerHTML = '<span class="pulse">Your Turn!</span>';
+        el.style.color = 'var(--success)';
+      } else {
+        el.textContent = "Opponent's Turn...";
+        el.style.color = 'var(--text-dim)';
+      }
+    }
+
+    function handleGameEnd(msg) {
+      if (currentGame) currentGame.status = 'completed';
+      const statusEl = document.getElementById('gameStatus');
+      statusEl.style.display = 'block';
+
+      document.getElementById('resignBtn').style.display = 'none';
+      document.getElementById('newGameBtn').style.display = '';
+
+      if (msg.resultType === 'draw') {
+        statusEl.className = 'status waiting';
+        statusEl.textContent = "🤝 It's a Draw!";
+      } else if (msg.winnerId === playerId) {
+        statusEl.className = 'status connected';
+        statusEl.textContent = '🏆 You Win!';
+      } else {
+        statusEl.className = 'status disconnected';
+        statusEl.textContent = `💀 You Lose! (${msg.resultType === 'timeout' ? 'Opponent timed out' : msg.resultType})`;
+      }
+    }
+
+    // ── Utilities ──
+    function sendMessage(msg) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        logMessage('error', 'Not connected');
+        return;
+      }
+      ws.send(JSON.stringify(msg));
+      logMessage('sent', `${msg.type}: ${JSON.stringify(msg).slice(0, 100)}`);
+    }
+
+    function logMessage(type, text) {
+      const logEl = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${time}] ${text}`;
+      logEl.prepend(entry);
+
+      // Keep max 100 entries
+      while (logEl.children.length > 100) {
+        logEl.removeChild(logEl.lastChild);
+      }
+    }
+
+    function setConnectionStatus(cls, text) {
+      const el = document.getElementById('connectionStatus');
+      el.className = `status ${cls}`;
+      el.textContent = text;
+    }
+
+    function setMatchStatus(cls, text) {
+      const el = document.getElementById('matchStatus');
+      if (!text) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      el.className = `status ${cls}`;
+      el.textContent = text;
+    }
+  </script>
+</body>
+</html>
