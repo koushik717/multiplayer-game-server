@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +20,11 @@
       --radius: 12px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -50,7 +55,7 @@
       background: var(--surface);
       border-radius: var(--radius);
       padding: 20px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .panel h2 {
@@ -61,13 +66,17 @@
       letter-spacing: 1px;
     }
 
-    .full-width { grid-column: 1 / -1; }
+    .full-width {
+      grid-column: 1 / -1;
+    }
 
-    input, button, select {
+    input,
+    button,
+    select {
       width: 100%;
       padding: 10px 14px;
       border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       background: var(--surface-2);
       color: var(--text);
       font-size: 0.9rem;
@@ -76,7 +85,9 @@
       transition: border-color 0.2s;
     }
 
-    input:focus { border-color: var(--accent); }
+    input:focus {
+      border-color: var(--accent);
+    }
 
     button {
       cursor: pointer;
@@ -86,9 +97,20 @@
       transition: transform 0.1s, opacity 0.2s;
     }
 
-    button:hover { opacity: 0.9; transform: translateY(-1px); }
-    button:active { transform: translateY(0); }
-    button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .btn-secondary {
       background: var(--accent-2);
@@ -110,7 +132,7 @@
     .cell {
       aspect-ratio: 1;
       background: var(--surface-2);
-      border: 2px solid rgba(255,255,255,0.05);
+      border: 2px solid rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -126,10 +148,22 @@
       background: rgba(233, 69, 96, 0.1);
     }
 
-    .cell.taken { cursor: default; }
-    .cell .X { color: var(--accent); }
-    .cell .O { color: #4fc3f7; }
-    .cell.win-cell { background: rgba(74, 222, 128, 0.15); border-color: var(--success); }
+    .cell.taken {
+      cursor: default;
+    }
+
+    .cell .X {
+      color: var(--accent);
+    }
+
+    .cell .O {
+      color: #4fc3f7;
+    }
+
+    .cell.win-cell {
+      background: rgba(74, 222, 128, 0.15);
+      border-color: var(--success);
+    }
 
     /* ── Status indicators ── */
     .status {
@@ -140,10 +174,25 @@
       font-weight: 600;
     }
 
-    .status.connected { background: rgba(74, 222, 128, 0.1); color: var(--success); }
-    .status.disconnected { background: rgba(239, 68, 68, 0.1); color: var(--error); }
-    .status.playing { background: rgba(79, 195, 247, 0.1); color: #4fc3f7; }
-    .status.waiting { background: rgba(251, 191, 36, 0.1); color: var(--warning); }
+    .status.connected {
+      background: rgba(74, 222, 128, 0.1);
+      color: var(--success);
+    }
+
+    .status.disconnected {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+    }
+
+    .status.playing {
+      background: rgba(79, 195, 247, 0.1);
+      color: #4fc3f7;
+    }
+
+    .status.waiting {
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--warning);
+    }
 
     /* ── Log ── */
     #log {
@@ -157,11 +206,26 @@
       line-height: 1.6;
     }
 
-    .log-entry { border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0; }
-    .log-entry.sent { color: var(--warning); }
-    .log-entry.received { color: var(--success); }
-    .log-entry.error { color: var(--error); }
-    .log-entry.info { color: var(--text-dim); }
+    .log-entry {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 2px 0;
+    }
+
+    .log-entry.sent {
+      color: var(--warning);
+    }
+
+    .log-entry.received {
+      color: var(--success);
+    }
+
+    .log-entry.error {
+      color: var(--error);
+    }
+
+    .log-entry.info {
+      color: var(--text-dim);
+    }
 
     /* ── Game info ── */
     .game-info {
@@ -178,8 +242,15 @@
       font-size: 0.8rem;
     }
 
-    .player-badge.X { background: rgba(233, 69, 96, 0.2); color: var(--accent); }
-    .player-badge.O { background: rgba(79, 195, 247, 0.2); color: #4fc3f7; }
+    .player-badge.X {
+      background: rgba(233, 69, 96, 0.2);
+      color: var(--accent);
+    }
+
+    .player-badge.O {
+      background: rgba(79, 195, 247, 0.2);
+      color: #4fc3f7;
+    }
 
     .turn-indicator {
       text-align: center;
@@ -188,11 +259,26 @@
       margin: 10px 0;
     }
 
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
   <h1>🎮 Multiplayer Game Server — Test Client</h1>
 
@@ -249,6 +335,14 @@
     let playerId = null;
     let currentGame = null;
 
+    // Auto-set the server URL to the current host if deployed
+    window.addEventListener('DOMContentLoaded', () => {
+      const isFile = window.location.protocol === 'file:';
+      if (!isFile && window.location.hostname !== 'localhost') {
+        document.getElementById('serverUrl').value = window.location.origin;
+      }
+    });
+
     // ── Connection ──
     async function connect() {
       const serverUrl = document.getElementById('serverUrl').value;
@@ -270,8 +364,9 @@
         playerId = data.playerId;
         logMessage('info', `Got token for player ${playerId}`);
 
-        // Connect WebSocket
-        const wsUrl = serverUrl.replace('http', 'ws') + `/ws?token=${token}`;
+        // Connect WebSocket (handle wss:// for HTTPS)
+        const wsProtocol = serverUrl.startsWith('https') ? 'wss' : 'ws';
+        const wsUrl = serverUrl.replace(/^https?/, wsProtocol) + `/ws?token=${token}`;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
@@ -542,4 +637,5 @@
     }
   </script>
 </body>
+
 </html>
